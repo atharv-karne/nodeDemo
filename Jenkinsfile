@@ -41,7 +41,7 @@ pipeline {
                     sh """
                     echo "Pushing Docker image..."
                     docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-                    docker push ${env.ECR_REPO_URL}
+                    docker push "730335267178.dkr.ecr.ap-south-1.amazonaws.com"/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
                     """
                 }
             }
