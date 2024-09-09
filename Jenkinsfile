@@ -29,34 +29,33 @@ stage('Docker Image build and push') {
     agent any
     steps {
         script {
-            def imageName = "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-            def ecrImage = "${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+            def localImageName = "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+            def ecrImageName = "${env.ECR_REPO_URL}/my-node-app:${DOCKER_IMAGE_TAG}"
 
-            echo "Image name: ${imageName}"
-            echo "ECR Image: ${ecrImage}"
+            echo "Local Image Name: ${localImageName}"
+            echo "ECR Image Name: ${ecrImageName}"
 
-            def image = docker.build(imageName, "-f Dockerfile .")
+            def image = docker.build(localImageName, "-f Dockerfile .")
 
             withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
                 sh """
                 echo "Logging in to ECR..."
                 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
-                
-                echo "Checking ECR repository URL..."
-                echo "Repository URL: ${env.ECR_REPO_URL}"
+
                 echo "Tagging Docker image..."
-                docker tag ${imageName} ${ecrImage}
+                docker tag ${localImageName} ${ecrImageName}
 
                 echo "Listing local Docker images:"
                 docker images
 
                 echo "Pushing Docker image..."
-                docker push ${ecrImage}
+                docker push ${ecrImageName}
                 """
             }
         }
     }
 }
+
 
         
         stage('Deploy container') {
