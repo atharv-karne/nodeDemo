@@ -24,8 +24,8 @@ stage('Infra_apply') {
                             returnStdout: true
                         ).trim()
                         
-                        withEnv(["ECR_REPO_URL=${ecrRepoUrl}"]) {
-                            echo "ECR Repository URL: ${ecrRepoUrl}"
+                        withEnv(["ECR_REPO_URL=${ecr_url}"]) {
+                            echo "ECR Repository URL: ${ecr_url}"
                         }
                     }
                 }
