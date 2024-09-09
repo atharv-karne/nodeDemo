@@ -38,7 +38,7 @@ stage('Docker Image build and push') {
         script {
             def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
 
-            withCredentials([aws(credentialsId: 'AWS-ECR', region: AWS_REGION)]) {
+            withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
                 sh '''
                 echo "Logging in to ECR..."
                 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
