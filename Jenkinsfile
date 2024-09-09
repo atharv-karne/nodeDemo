@@ -8,7 +8,7 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         CONTAINER_NAME = 'my-node-app-container'
         APP_PORT = '3000'
-        ECR_REPO_URL = 'http://730335267178.dkr.ecr.ap-south-1.amazonaws.com/tf-ecr-repo'
+        ECR_REPO_URL = '730335267178.dkr.ecr.ap-south-1.amazonaws.com/tf-ecr-repo'
     }
     
     stages {
