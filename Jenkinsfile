@@ -25,32 +25,39 @@ pipeline {
             }
         }
         
-        stage('Docker Image build and push') {
-            agent any
-            steps {
-                script {
-                    def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
+stage('Docker Image build and push') {
+    agent any
+    steps {
+        script {
+            def imageName = "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+            def ecrImage = "${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 
-                    withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
-                        sh """
-                        echo "Logging in to ECR..."
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
-                        """
-                    }
+            echo "Image name: ${imageName}"
+            echo "ECR Image: ${ecrImage}"
 
-                    sh """
-                    echo "Pushing Docker image..."
-                    docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+            def image = docker.build(imageName, "-f Dockerfile .")
 
-                    echo "Listing local Docker images:"
-                    docker images
+            withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
+                sh """
+                echo "Logging in to ECR..."
+                aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
+                
+                echo "Checking ECR repository URL..."
+                echo "Repository URL: ${env.ECR_REPO_URL}"
+                echo "Tagging Docker image..."
+                docker tag ${imageName} ${ecrImage}
 
-                    docker push ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                echo "Listing local Docker images:"
+                docker images
 
-                    """
-                }
+                echo "Pushing Docker image..."
+                docker push ${ecrImage}
+                """
             }
         }
+    }
+}
+
         
         stage('Deploy container') {
             agent any
