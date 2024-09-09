@@ -45,9 +45,6 @@ stage('Docker Image build and push') {
                 echo "Tagging Docker image..."
                 docker tag ${localImageName} ${ecrImageName}
 
-                echo "Listing local Docker images:"
-                docker images
-
                 echo "Pushing Docker image..."
                 docker push ${ecrImageName}
                 """
@@ -65,7 +62,7 @@ stage('Docker Image build and push') {
                 script {
                     withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}"
-                        sh "docker pull ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                        sh "docker pull ${env.ECR_REPO_URL}:${DOCKER_IMAGE_TAG}"
 
                         sh "docker stop ${CONTAINER_NAME} || true"
                         sh "docker rm ${CONTAINER_NAME} || true"
