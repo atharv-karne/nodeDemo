@@ -33,7 +33,7 @@ pipeline {
             agent any
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f 04_NodeApp/Dockerfile 04_NodeApp")
+                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
                     
                     docker.withRegistry("https://${ECR_REPO_URL}", 'AWS-Cred') {
                         docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}").push("${DOCKER_IMAGE_TAG}")
