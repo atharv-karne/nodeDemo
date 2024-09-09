@@ -8,10 +8,11 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         CONTAINER_NAME = 'my-node-app-container'
         APP_PORT = '3000'
+        ECR_REPO_URL = ''
     }
     
     stages {
-stage('Infra_apply') {
+        stage('Infra_apply') {
             agent any
             steps {
                 script {
@@ -24,9 +25,8 @@ stage('Infra_apply') {
                             returnStdout: true
                         ).trim()
                         
-                        withEnv(["ECR_REPO_URL=${ecrRepoUrl}"]) {
-                            echo "ECR Repository URL: ${ecrRepoUrl}"
-                        }
+                        env.ECR_REPO_URL = ecrRepoUrl
+                        echo "ECR Repository URL: ${ecrRepoUrl}"
                     }
                 }
             }
@@ -37,7 +37,7 @@ stage('Infra_apply') {
                 script {
                     docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
                     
-                    docker.withRegistry("https://${ECR_REPO_URL}", 'AWS-Cred') {
+                    docker.withRegistry("https://${env.ECR_REPO_URL}", 'AWS-Cred') {
                         docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}").push("${DOCKER_IMAGE_TAG}")
                     }
                 }
@@ -47,14 +47,16 @@ stage('Infra_apply') {
             agent any
             steps {
                 script {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}"
-                    sh "docker pull ${ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                    withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}"
+                        sh "docker pull ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 
-                    sh "docker stop ${CONTAINER_NAME} || true"
-                    sh "docker rm ${CONTAINER_NAME} || true"
+                        sh "docker stop ${CONTAINER_NAME} || true"
+                        sh "docker rm ${CONTAINER_NAME} || true"
 
-                    sh "docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                    sh "docker ps | grep ${CONTAINER_NAME}"
+                        sh "docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                        sh "docker ps | grep ${CONTAINER_NAME}"
+                    }
                 }
             }
         }
