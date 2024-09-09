@@ -37,7 +37,7 @@ pipeline {
                 script {
                     docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
                     
-                    docker.withRegistry("https://${env.ECR_REPO_URL}", 'AWS-Cred') {
+                    docker.withRegistry("https://${env.ECR_REPO_URL}", 'b0e36409-196c-4387-85f1-e941eb5901dd') {
                         docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}").push("${DOCKER_IMAGE_TAG}")
                     }
                 }
