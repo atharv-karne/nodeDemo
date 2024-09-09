@@ -32,18 +32,28 @@ pipeline {
             }
         }
         
-        stage('Docker Image build and push') {
-            agent any
-            steps {
-                script {
-                    def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
-                    
-                    docker.withRegistry("https://${env.ECR_REPO_URL}", 'AWS-ECR') {
-                        image.push("${DOCKER_IMAGE_TAG}")
-                    }
-                }
+stage('Docker Image build and push') {
+    agent any
+    steps {
+        script {
+            def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
+
+            withCredentials([aws(credentialsId: 'AWS-ECR', region: AWS_REGION)]) {
+                sh '''
+                echo "Logging in to ECR..."
+                aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
+                '''
             }
+
+            sh '''
+            echo "Pushing Docker image..."
+            docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+            docker push ${env.ECR_REPO_URL}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+            '''
         }
+    }
+}
+
         
         stage('Deploy container') {
             agent any
