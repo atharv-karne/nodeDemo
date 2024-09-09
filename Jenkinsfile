@@ -11,20 +11,22 @@ pipeline {
     }
     
     stages {
-        stage('Infra_apply') {
+stage('Infra_apply') {
             agent any
             steps {
                 script {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
-                    
-                    def ecrRepoUrl = sh(
-                        script: "terraform output -raw ecr_repository_url",
-                        returnStdout: true
-                    ).trim()
-                    
-                    withEnv(["ECR_REPO_URL=${ecrRepoUrl}"]) {
-                        echo "ECR Repository URL: ${ecrRepoUrl}"
+                    withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
+                        sh 'terraform init'
+                        sh 'terraform apply -auto-approve'
+                        
+                        def ecrRepoUrl = sh(
+                            script: "terraform output -raw ecr_repository_url",
+                            returnStdout: true
+                        ).trim()
+                        
+                        withEnv(["ECR_REPO_URL=${ecrRepoUrl}"]) {
+                            echo "ECR Repository URL: ${ecrRepoUrl}"
+                        }
                     }
                 }
             }
