@@ -32,7 +32,6 @@ stage('Docker Image build and push') {
             def localImageName = "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
             def ecrImageName = "${env.ECR_REPO_URL}:${DOCKER_IMAGE_TAG}"
 
-            // echo "Local Image Name: ${localImageName}"
             echo "ECR Image Name: ${ecrImageName}"
 
             def image = docker.build(DOCKER_IMAGE_NAME, "-f Dockerfile .")
@@ -64,8 +63,6 @@ stage('Docker Image build and push') {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}"
                         sh "docker pull ${env.ECR_REPO_URL}:${DOCKER_IMAGE_TAG}"
 
-                        // sh "docker stop ${CONTAINER_NAME} || true"
-                        // sh "docker rm ${CONTAINER_NAME} || true"
 
                         sh "docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${env.ECR_REPO_URL}:${DOCKER_IMAGE_TAG}"
                         sh "docker ps | grep ${CONTAINER_NAME}"
