@@ -31,18 +31,18 @@ pipeline {
                 }
             }
         }
-        stage('Docker Image build and push') {
+stage('Docker Image build and push') {
     agent any
     steps {
         script {
             def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", "-f Dockerfile .")
-            
-            docker.withRegistry("https://${env.ECR_REPO_URL}", 'AWS-Secret') {
+                        docker.withRegistry("https://${env.ECR_REPO_URL}", 'AWS-ECR') {
                 image.push("${DOCKER_IMAGE_TAG}")
             }
         }
     }
 }
+
 
         stage('Deploy container') {
             agent any
