@@ -2,11 +2,11 @@ pipeline {
     agent none
     
     environment {
-        DOCKER_IMAGE_NAME = 'my-node-app'
+        DOCKER_IMAGE_NAME = 'tf-ecr-repo'
         DOCKER_IMAGE_TAG = 'latest'
         ECR_REPO_NAME = 'tf-ecr-repo' 
         AWS_REGION = 'ap-south-1'
-        CONTAINER_NAME = 'my-node-app-container'
+        CONTAINER_NAME = 'tf-ecr-repo-container'
         APP_PORT = '3000'
         ECR_REPO_URL = "730335267178.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
     }
@@ -30,12 +30,12 @@ stage('Docker Image build and push') {
     steps {
         script {
             def localImageName = "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-            def ecrImageName = "${env.ECR_REPO_URL}/my-node-app:${DOCKER_IMAGE_TAG}"
+            def ecrImageName = "${env.ECR_REPO_URL}:${DOCKER_IMAGE_TAG}"
 
-            echo "Local Image Name: ${localImageName}"
+            // echo "Local Image Name: ${localImageName}"
             echo "ECR Image Name: ${ecrImageName}"
 
-            def image = docker.build(localImageName, "-f Dockerfile .")
+            def image = docker.build(DOCKER_IMAGE_NAME, "-f Dockerfile .")
 
             withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
                 sh """
@@ -55,6 +55,7 @@ stage('Docker Image build and push') {
         }
     }
 }
+
 
 
         
