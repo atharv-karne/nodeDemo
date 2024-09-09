@@ -20,12 +20,12 @@ stage('Infra_apply') {
                         sh 'terraform apply -auto-approve'
                         
                         def ecrRepoUrl = sh(
-                            script: "terraform output -raw ecr_repository_url",
+                            script: "terraform output -raw ecr_url",
                             returnStdout: true
                         ).trim()
                         
-                        withEnv(["ECR_REPO_URL=${ecr_url}"]) {
-                            echo "ECR Repository URL: ${ecr_url}"
+                        withEnv(["ECR_REPO_URL=${ecrRepoUrl}"]) {
+                            echo "ECR Repository URL: ${ecrRepoUrl}"
                         }
                     }
                 }
