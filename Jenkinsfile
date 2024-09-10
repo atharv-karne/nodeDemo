@@ -38,13 +38,13 @@ stage('Docker Image build and push') {
 
             withCredentials([aws(credentialsId: 'AWS-Cred', region: AWS_REGION)]) {
                 sh """
-                echo "Logging in to ECR..."
+                echo "Logging in to ECR here..."
                 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}
 
-                echo "Tagging Docker image..."
+                echo "Tagging Docker image here..."
                 docker tag ${localImageName} ${ecrImageName}
 
-                echo "Pushing Docker image..."
+                echo "Pushing Docker image here..."
                 docker push ${ecrImageName}
                 """
             }
